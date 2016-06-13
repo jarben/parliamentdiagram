@@ -1,7 +1,9 @@
 #!/usr/bin/python
 import cgi, re, math, random, datetime, sys, os
 form = cgi.FieldStorage()
-inputlist = form.getvalue("inputlist", "")
+#inputlist = form.getvalue("inputlist", "")
+seats = sys.argv[1]
+inputlist = "Party, "+seats
 #Append input list to log file:
 logfile=open('log','a')
 logfile.write(datetime.datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S-%f ") + inputlist + '\n')
@@ -15,7 +17,7 @@ for file in os.listdir("svgfiles"):
         sys.exit()
 #If we get here, we didn't find a matching request, so continue.
 #Create a filename that will be unique each time.  Old files are deleted with a cron script.
-svgfilename = 'svgfiles/' + datetime.datetime.utcnow().strftime("%Y-%m-%d-%H-%M-%S-%f") + "-" + str(hash(inputlist) % ((sys.maxsize + 1) * 2))+'.svg'
+svgfilename = 'svgfiles/' + seats+'.svg'
 #Initialize useful calculated fields:
 #Total number of seats per number of rows in diagram:
 Totals=[ 3, 15, 33, 61, 95, 138, 189, 247, 313, 388, 469, 559, 657, 762, 876, 997, 1126, 1263, 1408, 1560, 1722, 1889, 2066, 2250, 2442, 2641, 2850, 3064, 3289, 3519, 3759, 4005, 4261, 4522, 4794, 5071, 5358, 5652, 5953, 6263, 6581, 6906, 7239, 7581, 7929, 8287, 8650, 9024, 9404, 9793, 10187, 10594, 11003, 11425, 11850, 12288, 12729, 13183, 13638, 14109, 14580, 15066, 15553, 16055, 16557, 17075, 17592, 18126, 18660, 19208, 19758, 20323, 20888, 21468, 22050, 22645, 23243, 23853, 24467, 25094, 25723, 26364, 27011, 27667, 28329, 29001, 29679, 30367, 31061]
@@ -51,8 +53,8 @@ if inputlist:
     #Figure out how many rows are needed:
     for i in range(len(Totals)):
       if Totals[i] >= sumdelegates:
-	rows=i+1
-	break
+        rows=i+1
+        break
     #Maximum radius of spot is 0.5/rows; leave a bit of space.
     radius=0.4/rows
 # Open svg file for writing:
@@ -95,13 +97,13 @@ if inputlist:
     Counter=-1 #How many spots have we drawn?
     for i in range(len(partylist)):
       #Make each party's blocks an svg group
-      outfile.write('  <g style="fill:'+partylist[i][2]+'" id="'+''.join(partylist[i][0].split())+'">\n')
+      outfile.write('  <g style="fill:#EEEEEE" id="'+''.join(partylist[i][0].split())+'">\n')
       for Counter in range(Counter+1, Counter+partylist[i][1]+1):
-        tempstring='    <circle cx="%.2f" cy="%.2f" r="%.2f"/>' % (poslist[Counter][1]*100.0+5.0, 100.0*(1.75-poslist[Counter][2])+5.0, radius*100.0)
-	outfile.write(tempstring+'\n')
+        tempstring='    <circle cx="%.2f" data-part="seat" name="%.0f" cy="%.2f" r="%.2f"/>' % (poslist[Counter][1]*100.0+5.0,  Counter,100.0*(1.75-poslist[Counter][2])+5.0, radius*100.0)
+        outfile.write(tempstring+'\n')
       outfile.write('  </g>\n')
     outfile.write('</g>\n')
     outfile.write('</svg>\n')
     outfile.close()
     #Pass the output filename to the calling page.
-    print svgfilename
+    print (svgfilename)
